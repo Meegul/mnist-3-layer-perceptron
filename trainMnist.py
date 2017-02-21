@@ -2,23 +2,10 @@ from __future__ import print_function
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("/tmp/data", one_hot=True)
 import tensorflow as tf
-import numpy as np
-import csv
-import matplotlib.pyplot as plt
-
-label_keys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-
-def showImage(data, guess, answer, correct):
-	arr = np.array(data, dtype='float')
-	arr = arr.reshape((28, 28))
-	
-	plt.title("Guess={guess}|Answer={answer}|Correct={correct}".format(guess=guess, answer=answer, correct=correct))
-	plt.imshow(arr, cmap='gray')
-	plt.show()
 
 #Settings
 learning_rate = 0.001
-training_epochs = 15
+training_epochs = 30
 batch_size = 100
 display_step = 1
 
@@ -80,24 +67,13 @@ with tf.Session() as sess:
 
 	print("Optimization Finished!")
 	
-	print("Saving model...")
-	save_path = saver.save(sess, './saved_models/mnist/model.ckpt')
-	print("Model saved in %s" % save_path)
 
 	print("Beginning evaluation of model...")
-
-	#guesses = tf.argmax(pred, 1).eval({x: mnist.test.images, y: mnist.test.labels})
-	#answers = tf.argmax(y, 1).eval({x: mnist.test.images, y: mnist.test.labels})
-	#correctness = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1)).eval({x: mnist.test.images, y: mnist.test.labels})
-
-	# Show all images w/ guess, answer, and correctness
-	#for i in range(len(mnist.test.images)):
-	#	batch_x = mnist.test.images;
-	#	guess = label_keys[guesses[i]]
-	#	answer = label_keys[answers[i]]
-	#	correct = correctness[i]
-	#	showImage(batch_x[i], guess, answer, correct) 
 
 	correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
 	accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 	print("Accuracy:", accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
+
+	print("Saving model...")
+	save_path = saver.save(sess, './saved_models/mnist/model.ckpt')
+	print("Model saved in %s" % save_path)

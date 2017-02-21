@@ -3,7 +3,6 @@ from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("/tmp/data", one_hot=True)
 import tensorflow as tf
 import numpy as np
-import csv
 import matplotlib.pyplot as plt
 
 label_keys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -73,6 +72,10 @@ with tf.Session() as sess:
 	answers = tf.argmax(y, 1).eval({x: mnist.test.images, y: mnist.test.labels})
 	correctness = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1)).eval({x: mnist.test.images, y: mnist.test.labels})
 
+	correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
+	accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+	print("Accuracy:", accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
+
 	# Show all images w/ guess, answer, and correctness
 	for i in range(len(mnist.test.images)):
 		batch_x = mnist.test.images;
@@ -81,7 +84,4 @@ with tf.Session() as sess:
 		correct = correctness[i]
 		showImage(batch_x[i], guess, answer, correct) 
 
-	correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
-	accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-	print("Accuracy:", accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
 
