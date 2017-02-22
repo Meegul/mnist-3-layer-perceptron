@@ -1,14 +1,11 @@
 from __future__ import print_function
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("/tmp/data", one_hot=True)
-import time
 import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
 
 #Settings
 learning_rate = 0.001
-training_epochs = 15
+training_epochs = 50
 batch_size = 100
 display_step = 1
 
@@ -22,8 +19,8 @@ n_classes = 10 # 10 possible outputs (0-9 digits)
 x = tf.placeholder("float", [None, n_input])
 y = tf.placeholder("float", [None, n_classes])
 
-# Function to create a 2 layer perceptron using relu activation
-def multilayer_perceptron(x, weights, biases):
+# Function to create a 3 layer perceptron using relu activation
+def generate_three_layer_perceptron(x, weights, biases):
 	layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
 	layer_1 = tf.nn.relu(layer_1)
 
@@ -50,49 +47,40 @@ biases = {
 }
 
 # Create the perceptron
-pred = multilayer_perceptron(x, weights, biases)
+pred = generate_three_layer_perceptron(x, weights, biases)
 
 # Cost function is avg softmax
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
-# Initialize saver object for restorting the model
+init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
 with tf.Session() as sess:
-	print("Restoring model...")
-	saver.restore(sess, './saved_models/mnist/model3.ckpt')
-	print("Model restored.")
+	sess.run(init)
+
+	for epoch in range(training_epochs):
+		avg_cost = 0.
+		total_batch = int(mnist.train.num_examples/batch_size)
+		
+		for i in range(total_batch):
+			batch_x, batch_y = mnist.train.next_batch(batch_size)
+			_, c = sess.run([optimizer, cost], feed_dict={x: batch_x, y: batch_y})
+			avg_cost += c/total_batch
+
+		if epoch % display_step == 0:
+			print("Epoch:", '%04d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
+
+	print("Optimization Finished!")
+	
 
 	print("Beginning evaluation of model...")
-	guesses = tf.argmax(pred, 1).eval({x: mnist.test.images, y: mnist.test.labels})
-	answers = tf.argmax(y, 1).eval({x: mnist.test.images, y: mnist.test.labels})
-	correctness = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1)).eval({x: mnist.test.images, y: mnist.test.labels})
 
 	correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
 	accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 	print("Accuracy:", accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
 
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
-	plt.ion()
-	plt.show()
-	cont = 'y'
-	# Show all images w/ guess, answer, and correctness
-	for i in range(len(mnist.test.images)):
-		if cont == 'n':
-			break
-		batch_x = mnist.test.images;
-		guess = guesses[i]
-		answer = answers[i]
-		correct = correctness[i]
-		arr = np.array(batch_x[i], dtype='float')
-		arr = arr.reshape((28, 28))
-		plt.title(
-			"Guess={guess}|Answer={answer}|Correct={correct}"
-			.format(guess=guess, answer=answer, correct=correct)
-		)
-		ax.imshow(arr, cmap='gray')
-		plt.draw()
-		cont = raw_input('Next? (y/n)')
-		
+	print("Saving model...")
+	save_path = saver.save(sess, './saved_models/model.ckpt')
+	print("Model saved in %s" % save_path)
+
