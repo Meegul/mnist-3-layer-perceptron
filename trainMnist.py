@@ -75,5 +75,5 @@ with tf.Session() as sess:
 	print("Accuracy:", accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
 
 	print("Saving model...")
-	save_path = saver.save(sess, './saved_models/mnist/model.ckpt')
+	save_path = saver.save(sess, './saved_models/mnist/model2.ckpt')
 	print("Model saved in %s" % save_path)

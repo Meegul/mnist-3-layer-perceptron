@@ -24,6 +24,7 @@ display_step = 1
 #NN Parameters
 n_hidden_1 = 256 # Layer 1 has 256 neurons
 n_hidden_2 = 256 # Layer 2 has 256 neurons
+n_hidden_3 = 256 # Layer 3 has 256 neurons
 n_input = 784 # Input is 28*28 = 784
 n_classes = 10 # 10 possible outputs (0-9 digits)
 
@@ -38,17 +39,22 @@ def multilayer_perceptron(x, weights, biases):
 	layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
 	layer_2 = tf.nn.relu(layer_2)
 
-	out_layer = tf.matmul(layer_2, weights['out']) + biases['out']
+	layer_3 = tf.add(tf.matmul(layer_2, weights['h3']), biases['b3'])
+	layer_3 = tf.nn.relu(layer_3)
+
+	out_layer = tf.matmul(layer_3, weights['out']) + biases['out']
 	return out_layer
 
 weights = {
 	'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1])),
 	'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
-	'out': tf.Variable(tf.random_normal([n_hidden_2, n_classes]))
+	'h3': tf.Variable(tf.random_normal([n_hidden_2, n_hidden_3])),
+	'out': tf.Variable(tf.random_normal([n_hidden_3, n_classes]))
 }
 biases = {
 	'b1': tf.Variable(tf.random_normal([n_hidden_1])),
 	'b2': tf.Variable(tf.random_normal([n_hidden_2])),
+	'b3': tf.Variable(tf.random_normal([n_hidden_3])),
 	'out': tf.Variable(tf.random_normal([n_classes]))
 }
 
@@ -64,7 +70,7 @@ saver = tf.train.Saver()
 
 with tf.Session() as sess:
 	print("Restoring model...")
-	saver.restore(sess, './saved_models/mnist/model2.ckpt')
+	saver.restore(sess, './saved_models/mnist/model3.ckpt')
 	print("Model restored.")
 
 	print("Beginning evaluation of model...")
